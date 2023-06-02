@@ -128,10 +128,6 @@ lazy_static! {
         OpCode::new(0x20, "JSR", 3, 6, AddressingMode::Absolute),
         /* LDA */
         OpCode::new(0xa9, "LDA", 2, 2, AddressingMode::Immediate),
-        /* LDX */
-        OpCode::new(0xa2, "LDX", 2, 2, AddressingMode::Immediate),
-        OpCode::new(0xa6, "LDX", 2, 3, AddressingMode::ZeroPage),
-
         OpCode::new(0xa5, "LDA", 2, 3, AddressingMode::ZeroPage),
         OpCode::new(0xb5, "LDA", 2, 4, AddressingMode::ZeroPage_X),
         OpCode::new(0xad, "LDA", 3, 4, AddressingMode::Absolute),
@@ -139,6 +135,68 @@ lazy_static! {
         OpCode::new(0xb9, "LDA", 3, 4 /* +1 if page cross */, AddressingMode::Absolute_Y),
         OpCode::new(0xa1, "LDA", 2, 6, AddressingMode::Indirect_X),
         OpCode::new(0xb1, "LDA", 2, 5 /* +1 if page cross */, AddressingMode::Indirect_Y),
+        /* LDX */
+        OpCode::new(0xa2, "LDX", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xa6, "LDX", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0xb6, "LDX", 2, 4, AddressingMode::ZeroPage_Y),
+        OpCode::new(0xae, "LDX", 3, 4, AddressingMode::Absolute),
+        OpCode::new(0xbe, "LDX", 3, 4 /* +1 if page cross */, AddressingMode::Absolute_Y),
+        /* LDY */
+        OpCode::new(0xa0, "LDY", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xa4, "LDY", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0xb4, "LDY", 2, 4, AddressingMode::ZeroPage_X),
+        OpCode::new(0xac, "LDY", 3, 4, AddressingMode::Absolute),
+        OpCode::new(0xbc, "LDY", 3, 4 /* +1 if page cross */, AddressingMode::Absolute_X),
+        /* LSR */
+        OpCode::new(0x4a, "LSR", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x46, "LSR", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x56, "LSR", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x4e, "LSR", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x5e, "LSR", 3, 7, AddressingMode::Absolute_X),
+        /* NOP */
+        OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
+        /* ORA */
+        OpCode::new(0x09, "ORA", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0x05, "ORA", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0x15, "ORA", 2, 4, AddressingMode::ZeroPage_X),
+        OpCode::new(0x0d, "ORA", 3, 4, AddressingMode::Absolute),
+        OpCode::new(0x1d, "ORA", 3, 4 /* +1 if page cross */, AddressingMode::Absolute_X),
+        OpCode::new(0x19, "ORA", 3, 4 /* +1 if page cross */, AddressingMode::Absolute_Y),
+        OpCode::new(0x01, "ORA", 2, 6, AddressingMode::Indirect_X),
+        OpCode::new(0x11, "ORA", 2, 5 /* +1 if page cross */, AddressingMode::Indirect_Y),
+        /* PHA */
+        OpCode::new(0x48, "PHA", 1, 3, AddressingMode::NoneAddressing),
+        /* PHP */
+        OpCode::new(0x08, "PHP", 1, 3, AddressingMode::NoneAddressing),
+        /* PLA */
+        OpCode::new(0x68, "PLA", 1, 4, AddressingMode::NoneAddressing),
+        /* PLP */
+        OpCode::new(0x28, "PLP", 1, 4, AddressingMode::NoneAddressing),
+        /* ROR */
+        OpCode::new(0x6a, "ROR", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x66, "ROR", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x76, "ROR", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x6e, "ROR", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x7e, "ROR", 3, 7, AddressingMode::Absolute_X),
+        /* RTI */
+        OpCode::new(0x40, "RTI", 1, 6, AddressingMode::NoneAddressing),
+        /* RTS */
+        OpCode::new(0x60, "RTS", 1, 6, AddressingMode::NoneAddressing),
+        /* SBC */
+        OpCode::new(0xe9, "SBC", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xe5, "SBC", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0xf5, "SBC", 2, 4, AddressingMode::ZeroPage_X),
+        OpCode::new(0xed, "SBC", 3, 4, AddressingMode::Absolute),
+        OpCode::new(0xfd, "SBC", 3, 4 /* +1 if page cross */, AddressingMode::Absolute_X),
+        OpCode::new(0xf9, "SBC", 3, 4 /* +1 if page cross */, AddressingMode::Absolute_Y),
+        OpCode::new(0xe1, "SBC", 2, 6, AddressingMode::Indirect_X),
+        OpCode::new(0xf1, "SBC", 2, 5 /* +1 if page cross */, AddressingMode::Indirect_Y),
+        /* SEC */
+        OpCode::new(0x38, "SEC", 1, 2, AddressingMode::NoneAddressing),
+        /* SED */
+        OpCode::new(0xf8, "SED", 1, 2, AddressingMode::NoneAddressing),
+        /* SEI */
+        OpCode::new(0x78, "SEI", 1, 2, AddressingMode::NoneAddressing),
         /* STA */
         OpCode::new(0x85, "STA", 2, 3, AddressingMode::ZeroPage),
         OpCode::new(0x95, "STA", 2, 4, AddressingMode::ZeroPage_X),
@@ -147,8 +205,23 @@ lazy_static! {
         OpCode::new(0x99, "STA", 3, 5, AddressingMode::Absolute_Y),
         OpCode::new(0x81, "STA", 2, 6, AddressingMode::Indirect_X),
         OpCode::new(0x91, "STA", 2, 6, AddressingMode::Indirect_Y),
-
+        /* STX */
+        OpCode::new(0x86, "STX", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0x96, "STX", 2, 4, AddressingMode::ZeroPage_Y),
+        OpCode::new(0x8e, "STX", 3, 4, AddressingMode::Absolute),
+        /* STY */
+        OpCode::new(0x84, "STY", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0x94, "STY", 2, 4, AddressingMode::ZeroPage_X),
+        OpCode::new(0x8c, "STY", 3, 4, AddressingMode::Absolute),
+        /* TAX */
         OpCode::new(0xaa, "TAX", 1, 2, AddressingMode::NoneAddressing),
+        /* TAY */
+        OpCode::new(0xa8, "TAY", 1, 2, AddressingMode::NoneAddressing),
+        /* TSX */
+        OpCode::new(0xba, "TSX", 1, 2, AddressingMode::NoneAddressing),
+        /* TXA */
+        OpCode::new(0x8a, "TXA", 1, 2, AddressingMode::NoneAddressing),
+        /* TXS */
     ];
     pub static ref OPCODES_MAP: HashMap<u8, &'static OpCode> = {
         let mut map = HashMap::new();

@@ -32,6 +32,7 @@ pub struct CPU {
 #[allow(non_camel_case_types)]
 pub enum AddressingMode {
     Immediate,
+    // Accumulator,
     ZeroPage,
     ZeroPage_X,
     ZeroPage_Y,
@@ -77,11 +78,11 @@ impl CPU {
 
     fn stack_push(&mut self, data: u8) {
         self.mem_write(STACK + self.stack_pointer as u16, data);
-        self.stack_pointer.wrapping_sub(1);
+        self.stack_pointer = self.stack_pointer.wrapping_sub(1);
     }
 
     fn stack_pop(&mut self) -> u8 {
-        self.stack_pointer.wrapping_add(1);
+        self.stack_pointer = self.stack_pointer.wrapping_add(1);
         self.mem_read(STACK + self.stack_pointer as u16)
     }
 
@@ -288,47 +289,43 @@ impl CPU {
                 "LSR" => {
                     self.lsr(&opcode.mode);
                 }
-                "NOP" => {
-                    self.nop(&opcode.mode);
-                }
+                "NOP" => {}
                 "ORA" => {
                     self.ora(&opcode.mode);
                 }
                 "PHA" => {
-                    self.pha(&opcode.mode);
+                    self.pha();
                 }
                 "PHP" => {
-                    self.php(&opcode.mode);
+                    self.php();
                 }
                 "PLA" => {
-                    self.pla(&opcode.mode);
+                    self.pla();
                 }
                 "PLP" => {
-                    self.plp(&opcode.mode);
+                    self.plp();
                 }
                 "ROL" => {
-                    self.rol(&opcode.mode);
+                    self.asl(&opcode.mode);
                 }
                 "ROR" => {
-                    self.ror(&opcode.mode);
+                    self.lsr(&opcode.mode);
                 }
                 "RTI" => {
-                    self.rti(&opcode.mode);
+                    self.rti();
                 }
                 "RTS" => {
-                    self.rts(&opcode.mode);
+                    self.rts();
                 }
                 "SBC" => {
                     self.sbc(&opcode.mode);
                 }
                 "SEC" => {
-                    self.sec(&opcode.mode);
+                    self.status.set(CpuFlag::CARRY, true);
                 }
-                "SED" => {
-                    self.sed(&opcode.mode);
-                }
+                "SED" => self.status.set(CpuFlag::DECIMAL_MODE, true),
                 "SEI" => {
-                    self.sei(&opcode.mode);
+                    self.status.set(CpuFlag::INTERRUPT_DISABLE, true);
                 }
                 "STA" => {
                     self.sta(&opcode.mode);
@@ -343,19 +340,19 @@ impl CPU {
                     self.tax();
                 }
                 "TAY" => {
-                    self.tay(&opcode.mode);
+                    self.tay();
                 }
                 "TSX" => {
-                    self.tsx(&opcode.mode);
+                    self.tsx();
                 }
                 "TXA" => {
-                    self.txa(&opcode.mode);
+                    self.txa();
                 }
                 "TXS" => {
-                    self.txs(&opcode.mode);
+                    self.txs();
                 }
                 "TYA" => {
-                    self.tya(&opcode.mode);
+                    self.tya();
                 }
                 _ => todo!(""),
             }
@@ -486,83 +483,99 @@ impl CPU {
     }
 
     fn ldx(&mut self, mode: &AddressingMode) {
-        todo!()
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+
+        self.register_x = value;
+        self.update_zero_and_negative_falgs(self.register_x);
     }
 
     fn ldy(&mut self, mode: &AddressingMode) {
-        todo!()
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+
+        self.register_y = value;
+        self.update_zero_and_negative_falgs(self.register_y);
     }
 
     fn lsr(&mut self, mode: &AddressingMode) {
-        todo!()
-    }
+        let (result, carry) = match mode {
+            AddressingMode::NoneAddressing => {
+                let (result, carry) = self.register_a.overflowing_shr(1);
+                self.register_a = result;
+                (result, carry)
+            }
+            _ => {
+                let addr = self.get_operand_address(mode);
+                let value = self.mem_read(addr);
 
-    fn nop(&mut self, mode: &AddressingMode) {
-        todo!()
+                let (result, carry) = value.overflowing_shr(1);
+                self.mem_write(addr, result);
+                (result, carry)
+            }
+        };
+
+        self.update_carry_flag(carry);
+        self.update_zero_and_negative_falgs(result);
     }
 
     fn ora(&mut self, mode: &AddressingMode) {
-        todo!()
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+
+        self.register_a = self.register_a | value;
+        self.update_zero_and_negative_falgs(self.register_a);
     }
 
-    fn pha(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn pha(&mut self) {
+        self.stack_push(self.register_a);
     }
 
-    fn php(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn php(&mut self) {
+        self.stack_push(self.status.bits());
     }
 
-    fn pla(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn pla(&mut self) {
+        self.register_a = self.stack_pop();
+        self.update_zero_and_negative_falgs(self.register_a);
     }
 
-    fn plp(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn plp(&mut self) {
+        self.status = CpuFlag::from_bits(self.stack_pop()).unwrap();
     }
 
-    fn rol(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn rti(&mut self) {
+        self.plp();
+        self.program_counter = self.stack_pop_u16();
     }
 
-    fn ror(&mut self, mode: &AddressingMode) {
-        todo!()
-    }
-
-    fn rti(&mut self, mode: &AddressingMode) {
-        todo!()
-    }
-
-    fn rts(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn rts(&mut self) {
+        self.program_counter = self.stack_pop_u16() - 1;
     }
 
     fn sbc(&mut self, mode: &AddressingMode) {
-        todo!()
-    }
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
 
-    fn sec(&mut self, mode: &AddressingMode) {
-        todo!()
-    }
-
-    fn sed(&mut self, mode: &AddressingMode) {
-        todo!()
-    }
-
-    fn sei(&mut self, mode: &AddressingMode) {
-        todo!()
+        let (result, overflow) = self.register_a.overflowing_sub(value);
+        self.register_a = result;
+        self.update_zero_and_negative_falgs(result);
+        self.update_carry_flag(!overflow);
     }
 
     fn sta(&mut self, mode: &AddressingMode) {
-        todo!()
+        let addr = self.get_operand_address(mode);
+        self.mem_write(addr, self.register_a);
     }
 
     fn stx(&mut self, mode: &AddressingMode) {
-        todo!()
+        let addr = self.get_operand_address(mode);
+        self.mem_write(addr, self.register_x);
     }
 
     fn sty(&mut self, mode: &AddressingMode) {
-        todo!()
+        let addr = self.get_operand_address(mode);
+        self.mem_write(addr, self.register_y);
     }
 
     // https://www.nesdev.org/obelisk-6502-guide/reference.html#TAX
@@ -571,24 +584,28 @@ impl CPU {
         self.update_zero_and_negative_falgs(self.register_x);
     }
 
-    fn tay(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn tay(&mut self) {
+        self.register_y = self.register_a;
+        self.update_zero_and_negative_falgs(self.register_y);
     }
 
-    fn tsx(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn tsx(&mut self) {
+        self.register_x = self.stack_pointer;
+        self.update_zero_and_negative_falgs(self.register_x);
     }
 
-    fn txa(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn txa(&mut self) {
+        self.register_a = self.register_x;
+        self.update_zero_and_negative_falgs(self.register_a);
     }
 
-    fn txs(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn txs(&mut self) {
+        self.stack_pointer = self.register_x;
     }
 
-    fn tya(&mut self, mode: &AddressingMode) {
-        todo!()
+    fn tya(&mut self) {
+        self.register_a = self.register_y;
+        self.update_zero_and_negative_falgs(self.register_a);
     }
 
     fn compare(&mut self, register: u8, mode: &AddressingMode) {
